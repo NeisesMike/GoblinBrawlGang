@@ -39,7 +39,10 @@ namespace GoblinBrawlGang
         {
             CreateButtonPlease(0, "Add Player", AddPlayer);
             CreateButtonPlease(1, "Remove Player", RemovePlayer);
-            CreateButtonPlease(2, "Medium Encounter", CreateMediumEncounters);
+            CreateButtonPlease(2, "Easy Encounter", CreateEncounters(Difficulty.Easy));
+            CreateButtonPlease(3, "Medium Encounter", CreateEncounters(Difficulty.Medium));
+            CreateButtonPlease(4, "Hard Encounter", CreateEncounters(Difficulty.Hard));
+            CreateButtonPlease(5, "Deadly Encounter", CreateEncounters(Difficulty.Deadly));
         }
         private void CreateButtonPlease(int yValue, string name, EventHandler func)
         {
@@ -80,12 +83,17 @@ namespace GoblinBrawlGang
                 GraphicsUpdate();
             }
         }
-        private void CreateMediumEncounters(object sender, EventArgs e)
+        private System.EventHandler CreateEncounters(Difficulty diff)
         {
-            Controls.Remove(myEncounters);
-            myEncounters = XPManager.CreateEncounters(players, Difficulty.Medium);
-            Controls.Add(myEncounters);
+            void UpdateEncounters(object sender, EventArgs e)
+            {
+                Controls.Remove(myEncounters);
+                myEncounters = XPManager.CreateEncounters(players, diff);
+                Controls.Add(myEncounters);
+            }
+            return UpdateEncounters;
         }
+
 
 
 
