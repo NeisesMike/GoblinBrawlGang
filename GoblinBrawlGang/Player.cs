@@ -29,10 +29,10 @@ namespace GoblinBrawlGang
         }
         public GroupBox DrawSelf(int position)
         {
-            Debug.WriteLine(level.ToString());
             GroupBox playerBox = new GroupBox();
             playerBox.Text = "Player " + id;
-            playerBox.AutoSize = true;
+            playerBox.Height = 105;
+            playerBox.Width = 100;
             playerBox.Location = new Point(12, 12 + 105 * position);
 
             Label levelLabel = new Label();
@@ -62,14 +62,16 @@ namespace GoblinBrawlGang
 
             Button up = new Button();
             up.Text = "+";
-            up.AutoSize = true;
+            up.Height = 25;
+            up.Width = 25;
             up.Parent = playerBox;
             up.Location = new Point(12, playerBox.Height / 4);
             up.Click += IncrementLevel;
 
             Button down = new Button();
             down.Text = "-";
-            down.AutoSize = true;
+            down.Height = 25;
+            down.Width = 25;
             down.Parent = playerBox;
             down.Location = new Point(12, playerBox.Height / 4 + 30);
             down.Click += DecrementLevel;
