@@ -1,7 +1,7 @@
 ﻿
 namespace GoblinBrawlGang
 {
-    partial class Form1
+    partial class GoblinBrawlGang
     {
         /// <summary>
         ///  Required designer variable.
@@ -32,13 +32,13 @@ namespace GoblinBrawlGang
             this.SuspendLayout();
          
             // 
-            // Form1
+            // GoblinBrawlGang
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(800, 450);
-            this.Name = "Form1";
-            this.Text = "Form1";
+            this.Name = "GoblinBrawlGang";
+            this.Text = "GoblinBrawlGang";
             this.Load += new System.EventHandler(this.Form1_Load);
             this.ResumeLayout(false);
 

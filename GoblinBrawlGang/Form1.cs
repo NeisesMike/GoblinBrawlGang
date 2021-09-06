@@ -11,7 +11,7 @@ using System.Drawing;
 
 namespace GoblinBrawlGang
 {
-    public partial class Form1 : Form
+    public partial class GoblinBrawlGang : Form
     {
         private static int defaultPlayerLevel = 1;
         private int _num_buttons = 0;
@@ -49,7 +49,7 @@ namespace GoblinBrawlGang
                 players.Enqueue(new Player(i, 5));
             }
         }
-        public Form1()
+        public GoblinBrawlGang()
         {
             this.AutoSize = true;
             InitializeComponent();

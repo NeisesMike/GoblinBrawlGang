@@ -7,12 +7,14 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using System.Diagnostics;
 
 namespace GoblinBrawlGang
 {
     public partial class EncounterBuilderForm : Form
     {
         public List<MonsterType> myEncounter = new List<MonsterType>();
+        public List<GroupBox> myEncounterGBs = new List<GroupBox>();
 
         public CheckedListBox crCLB;
         public CheckedListBox sizeCLB;
@@ -22,15 +24,20 @@ namespace GoblinBrawlGang
         public CheckedListBox alignmentCLB;
         public CheckedListBox environmentCLB;
 
+        private List<Monster> mobList;
+        private int leftBarWidth = 260;
 
-        public EncounterBuilderForm(List<Monster> mobList, SortedDictionary<int, Tuple<string, int>> printDict)
+        public EncounterBuilderForm(List<Monster> inMobList, SortedDictionary<int, Tuple<string, int>> printDict)
         {
+            mobList = inMobList;
             this.AutoSize = true;
             InitializeComponent();
             Label mobs = GetMobListLabel(printDict, mobList.Count);
             this.Controls.Add(mobs);
-            Button rando = GetRandomizerButton(12 + mobs.Height + 12);
+            Button rando = GetRandomizerButton(12, 12 + mobs.Height + 12);
             this.Controls.Add(rando);
+            Button resetti = GetResetFiltersButton(rando.Width + 12, 12 + mobs.Height + 12);
+            this.Controls.Add(resetti);
             AddDropDowns(12 + mobs.Height + 12 + rando.Height + 12);
         }
 
@@ -51,10 +58,51 @@ namespace GoblinBrawlGang
             return monsterSeqeuence;
         }
 
-        private Button GetRandomizerButton(int vertStart)
+        private void WipeEncounters()
+        {
+            foreach(GroupBox gb in myEncounterGBs)
+            {
+                Controls.Remove(gb);
+            }
+        }
+        private void ResetFilters()
+        {
+            sizeCLB.ClearSelected();
+            for (int i = 0; i < sizeCLB.Items.Count; i++)
+            {
+                sizeCLB.SetItemChecked(i, false);
+            }
+            typeCLB.ClearSelected();
+            for (int i = 0; i < typeCLB.Items.Count; i++)
+            {
+                typeCLB.SetItemChecked(i, false);
+            }
+            tagsCLB.ClearSelected();
+            for (int i = 0; i < tagsCLB.Items.Count; i++)
+            {
+                tagsCLB.SetItemChecked(i, false);
+            }
+            sectionCLB.ClearSelected();
+            for (int i = 0; i < sectionCLB.Items.Count; i++)
+            {
+                sectionCLB.SetItemChecked(i, false);
+            }
+            alignmentCLB.ClearSelected();
+            for (int i = 0; i < alignmentCLB.Items.Count; i++)
+            {
+                alignmentCLB.SetItemChecked(i, false);
+            }
+            environmentCLB.ClearSelected();
+            for (int i = 0; i < environmentCLB.Items.Count; i++)
+            {
+                environmentCLB.SetItemChecked(i, false);
+            }
+        }
+        private Button GetRandomizerButton(int x, int y)
         {
             void RandomGo(object sender, EventArgs e)
             {
+                WipeEncounters();
                 GenerateRandomEncounter();
                 PrintEncounter();
             }
@@ -62,9 +110,23 @@ namespace GoblinBrawlGang
             rando.Text = "Randomize";
             rando.Height = 50;
             rando.Width = 100;
-            rando.Location = new Point(12, vertStart);
+            rando.Location = new Point(x, y);
             rando.Click += RandomGo;
             return rando;
+        }
+        private Button GetResetFiltersButton(int x, int y)
+        {
+            void RandomGo(object sender, EventArgs e)
+            {
+                ResetFilters();
+            }
+            Button res = new Button();
+            res.Text = "Reset Filters";
+            res.Height = 50;
+            res.Width = 100;
+            res.Location = new Point(x, y);
+            res.Click += RandomGo;
+            return res;
         }
         private void AddDropDowns(int vertStart)
         {
@@ -75,18 +137,20 @@ namespace GoblinBrawlGang
                 CheckedListBox thisCLB = new CheckedListBox();
                 thisCLB.Text = name;
                 thisCLB.Height = 100;
-                thisCLB.Width = 200;
+                thisCLB.Width = leftBarWidth;
                 thisCLB.Location = new Point(12, currentVertStart);
                 currentVertStart += thisCLB.Height + 12;
                 return thisCLB;
             }
 
+            /*
             crCLB = GetCLB("cr");
             foreach (KeyValuePair<string, List<MonsterType>> pair in MonsterManual.crDict)
             {
                 crCLB.Items.Add(pair.Key);
             }
             this.Controls.Add(crCLB);
+            */
 
             sizeCLB = GetCLB("size");
             foreach (KeyValuePair<string, List<MonsterType>> pair in MonsterManual.sizeDict)
@@ -105,27 +169,44 @@ namespace GoblinBrawlGang
             tagsCLB = GetCLB("tags");
             foreach (KeyValuePair<string, List<MonsterType>> pair in MonsterManual.tagsDict)
             {
-                tagsCLB.Items.Add(pair.Key);
+                if (pair.Key != "" && !pair.Key.Contains("any") && !pair.Key.Contains("Any"))
+                {
+                    tagsCLB.Items.Add(pair.Key);
+                }
             }
             this.Controls.Add(tagsCLB);
 
             sectionCLB = GetCLB("section");
             foreach (KeyValuePair<string, List<MonsterType>> pair in MonsterManual.sectionDict)
             {
-                sectionCLB.Items.Add(pair.Key);
+                if (pair.Key != "")
+                {
+                    sectionCLB.Items.Add(pair.Key);
+                }
             }
             this.Controls.Add(sectionCLB);
 
             alignmentCLB = GetCLB("alignment");
-            foreach (KeyValuePair<string, List<MonsterType>> pair in MonsterManual.alignmentDict)
-            {
-                alignmentCLB.Items.Add(pair.Key);
-            }
+            alignmentCLB.Items.Add("Good");
+            alignmentCLB.Items.Add("GvE: Neutral");
+            alignmentCLB.Items.Add("Evil");
+            alignmentCLB.Items.Add("Lawful");
+            alignmentCLB.Items.Add("LvC: Neutral");
+            alignmentCLB.Items.Add("Chaotic");
+            alignmentCLB.Items.Add("Non-Good");
+            alignmentCLB.Items.Add("Non-Evil");
+            alignmentCLB.Items.Add("Non-Lawful");
+            alignmentCLB.Items.Add("Non-Chaotic");
+            alignmentCLB.Items.Add("Unaligned");
             this.Controls.Add(alignmentCLB);
 
             environmentCLB = GetCLB("environment");
             foreach (KeyValuePair<string, List<MonsterType>> pair in MonsterManual.environmentDict)
             {
+                if(pair.Key.Contains(",") || pair.Key == "")
+                {
+                    continue;
+                }
                 environmentCLB.Items.Add(pair.Key);
             }
             this.Controls.Add(environmentCLB);
@@ -139,9 +220,9 @@ namespace GoblinBrawlGang
             {
                 GroupBox thisGB = new GroupBox();
                 thisGB.Text = mt.name;
-                thisGB.Height = 175;
-                thisGB.Width = 150;
-                thisGB.Location = new Point(200 + 12 + 12 + thisGB.Width * (position%3), 12 + thisGB.Height * (position/3));
+                thisGB.Height = 200;
+                thisGB.Width = 300;
+                thisGB.Location = new Point(leftBarWidth + 12 + 12 + thisGB.Width * (position%3), 12 + thisGB.Height * (position/3));
                 position++;
 
                 Label thisLabel = new Label();
@@ -160,17 +241,23 @@ namespace GoblinBrawlGang
                     "HP: " + mt.hp;
 
                 this.Controls.Add(thisGB);
+                myEncounterGBs.Add(thisGB);
             }
         }
 
         private void GenerateRandomEncounter()
         {
+            myEncounter.Clear();
+            Random random = new Random();
+
             // generate filters
+            /*
             List<string> crFilters = new List<string>();
             foreach (string cItem in crCLB.CheckedItems)
             {
                 crFilters.Add(cItem);
             }
+            */
 
             List<string> sizeFilters = new List<string>();
             foreach (string cItem in sizeCLB.CheckedItems)
@@ -208,21 +295,132 @@ namespace GoblinBrawlGang
                 environmentFilters.Add(cItem);
             }
 
-            //TODO apply the filters to the master list, 
-            // and randomize over the filtered list.
+            List<MonsterType> filteredList = new List<MonsterType>();
+            foreach (MonsterType mt in MonsterManual.MyManual)
+            {
+                if
+                    (
+                        (sizeFilters.Contains(mt.size) || sizeFilters.Count == 0)
+                     && (typeFilters.Contains(mt.type) || typeFilters.Count == 0)
+                     && (tagsFilters.Contains(mt.tags) || tagsFilters.Count == 0)
+                     && (sectionFilters.Contains(mt.section) || sectionFilters.Count == 0)
+                     && (environmentFilters.Contains(mt.environment) || environmentFilters.Count == 0)
+                     && (IsProperAlignment(mt, alignmentFilters) || alignmentFilters.Count == 0)
+                    )
+                {
+                    filteredList.Add(mt);
+                }
+            }
+
+            if(filteredList.Count == 0)
+            {
+                // TODO throw a helpful error message
+                // "Those filters were incompatible."
+                return;
+            }
+
+            // build the new monstertype list: the new encounter
+            foreach(Monster mob in mobList)
+            {
+                List<MonsterType> thisCRList = filteredList.FindAll(e => CombatRating.CRStringToEnum(e.cr) == mob.cr);
+                if (thisCRList.Count == 0)
+                {
+                    myEncounter.Clear();
+                    // TODO throw a helpful error message
+                    // "There are no such creatures at this CR level: " + mob.cr.ToString()
+                    return;
+                }
+                MonsterType chosenMob = thisCRList[random.Next(thisCRList.Count)];
+                myEncounter.Add(chosenMob);
+            }
 
 
-
-            // these are just for testing
-            myEncounter.Add(MonsterManual.MyManual[0]);
-            myEncounter.Add(MonsterManual.MyManual[0]);
-            myEncounter.Add(MonsterManual.MyManual[0]);
-            myEncounter.Add(MonsterManual.MyManual[10]);
-            myEncounter.Add(MonsterManual.MyManual[10]);
-            myEncounter.Add(MonsterManual.MyManual[10]);
-            myEncounter.Add(MonsterManual.MyManual[100]);
-            myEncounter.Add(MonsterManual.MyManual[100]);
-            myEncounter.Add(MonsterManual.MyManual[100]);
         }
-    }
+
+        // verify alignment filters
+        public static bool IsProperAlignment(MonsterType mt, List<string> filters)
+        {
+            // if this creature is unaligned, and we've selected unaligned as a filter,
+            // allow it regardless of the other filters.
+            if (mt.alignment == "unaligned" && filters.Contains("Unaligned"))
+            {
+                return true;
+            }
+
+            foreach (string align in filters)
+            {
+                // return false when the monster has an alignment type that we disallow,
+                // or when it fails to have an alignment type we require
+                switch (align)
+                {
+                    case ("Good"):
+                        if(!mt.alignment.Contains("good"))
+                        {
+                            return false;
+                        }
+                        break;
+                    case("GvE: Neutral"):
+                        if (mt.alignment.Contains("good") || mt.alignment.Contains("evil"))
+                        {
+                            return false;
+                        }
+                        break;
+                    case ("Evil"):
+                        if (!mt.alignment.Contains("evil"))
+                        {
+                            return false;
+                        }
+                        break;
+                    case ("Lawful"):
+                        if (!mt.alignment.Contains("lawful"))
+                        {
+                            return false;
+                        }
+                        break;
+                    case ("LvC: Neutral"):
+                        if (mt.alignment.Contains("lawful") || mt.alignment.Contains("chaotic"))
+                        {
+                            return false;
+                        }
+                        break;
+                    case ("Chaotic"):
+                        if (!mt.alignment.Contains("chaotic"))
+                        {
+                            return false;
+                        }
+                        break;
+                    case ("Non-Good"):
+                        if (mt.alignment.Contains("good"))
+                        {
+                            return false;
+                        }
+                        break;
+                    case ("Non-Evil"):
+                        if (!mt.alignment.Contains("evil"))
+                        {
+                            return false;
+                        }
+                        break;
+                    case ("Non-Lawful"):
+                        if (mt.alignment.Contains("lawful"))
+                        {
+                            return false;
+                        }
+                        break;
+                    case ("Non-Chaotic"):
+                        if (mt.alignment.Contains("chaotic"))
+                        {
+                            return false;
+                        }
+                        break;
+                    default:
+                        break;
+                }
+            }
+            return true;
+        }
+
+
+
+}
 }
