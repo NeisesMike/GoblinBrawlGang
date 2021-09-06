@@ -208,8 +208,12 @@ namespace GoblinBrawlGang
                 environmentFilters.Add(cItem);
             }
 
+            //TODO apply the filters to the master list, 
+            // and randomize over the filtered list.
 
 
+
+            // these are just for testing
             myEncounter.Add(MonsterManual.MyManual[0]);
             myEncounter.Add(MonsterManual.MyManual[0]);
             myEncounter.Add(MonsterManual.MyManual[0]);
