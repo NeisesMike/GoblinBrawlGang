@@ -11,10 +11,9 @@ using System.Diagnostics;
 
 namespace GoblinBrawlGang
 {
-    public partial class EncounterBuilder : Form
+    public partial class CreatureFinder : Form
     {
-        public List<MonsterType> myEncounter = new List<MonsterType>();
-        public List<GroupBox> myEncounterGBs = new List<GroupBox>();
+        public FlowLayoutPanel creatureListPanel;
 
         public CheckedListBox crCLB;
         public CheckedListBox sizeCLB;
@@ -24,24 +23,21 @@ namespace GoblinBrawlGang
         public CheckedListBox alignmentCLB;
         public CheckedListBox environmentCLB;
 
-        private List<Monster> mobList;
         private int leftBarWidth = 260;
+        public List<MonsterType> mobList = new List<MonsterType>();
 
-        public EncounterBuilder(List<Monster> inMobList, SortedDictionary<int, Tuple<string, int>> printDict)
+        public CreatureFinder()
         {
-            mobList = inMobList;
             this.AutoSize = true;
             //InitializeComponent();
-            Label mobs = GetMobListLabel(printDict, mobList.Count);
-            this.Controls.Add(mobs);
-            Button rando = GetRandomizerButton(12, 12 + mobs.Height + 12);
+            Button rando = GetRandomizerButton(12, 12);
             this.Controls.Add(rando);
-            Button resetti = GetResetFiltersButton(rando.Width + 12, 12 + mobs.Height + 12);
+            Button resetti = GetResetFiltersButton(rando.Width + 12, 12);
             this.Controls.Add(resetti);
-            AddDropDowns(12 + mobs.Height + 12 + rando.Height + 12);
+            AddDropDowns(12 + rando.Height + 12);
         }
 
-        private void EncounterBuilder_Load(object sender, EventArgs e)
+        private void CreatureFinder_Load(object sender, EventArgs e)
         {
         }
 
@@ -60,10 +56,7 @@ namespace GoblinBrawlGang
 
         private void WipeEncounters()
         {
-            foreach (GroupBox gb in myEncounterGBs)
-            {
-                Controls.Remove(gb);
-            }
+            Controls.Remove(creatureListPanel);
         }
         private void ResetFilters()
         {
@@ -103,11 +96,11 @@ namespace GoblinBrawlGang
             void RandomGo(object sender, EventArgs e)
             {
                 WipeEncounters();
-                GenerateRandomEncounter();
-                PrintEncounter();
+                List<MonsterType> creatures = GenerateFilteredCreatureList();
+                PrintEncounter(creatures);
             }
             Button rando = new Button();
-            rando.Text = "Randomize";
+            rando.Text = "Filter";
             rando.Height = 50;
             rando.Width = 100;
             rando.Location = new Point(x, y);
@@ -143,14 +136,12 @@ namespace GoblinBrawlGang
                 return thisCLB;
             }
 
-            /*
             crCLB = GetCLB("cr");
             foreach (KeyValuePair<string, List<MonsterType>> pair in MonsterManual.crDict)
             {
                 crCLB.Items.Add(pair.Key);
             }
             this.Controls.Add(crCLB);
-            */
 
             sizeCLB = GetCLB("size");
             foreach (KeyValuePair<string, List<MonsterType>> pair in MonsterManual.sizeDict)
@@ -212,52 +203,74 @@ namespace GoblinBrawlGang
             this.Controls.Add(environmentCLB);
         }
 
-        private void PrintEncounter()
+        private void PrintEncounter(List<MonsterType> creatures)
         {
-            // print in rows of three
-            int position = 0;
-            foreach (MonsterType mt in myEncounter)
+            if(creatures==null)
             {
-                GroupBox thisGB = new GroupBox();
-                thisGB.Text = mt.name;
-                thisGB.Height = 200;
-                thisGB.Width = 300;
-                thisGB.Location = new Point(leftBarWidth + 12 + 12 + thisGB.Width * (position % 3), 12 + thisGB.Height * (position / 3));
-                position++;
-
-                Label thisLabel = new Label();
-                thisLabel.Parent = thisGB;
-                thisLabel.Location = new Point(12, 24);
-                thisLabel.AutoSize = true;
-                thisLabel.Text =
-                    "CR: " + mt.cr + Environment.NewLine +
-                    "Size: " + mt.size + Environment.NewLine +
-                    "Type: " + mt.type + Environment.NewLine +
-                    "Tags: " + mt.tags + Environment.NewLine +
-                    "Section: " + mt.section + Environment.NewLine +
-                    "Align: " + mt.alignment + Environment.NewLine +
-                    "Env: " + mt.environment + Environment.NewLine +
-                    "AC: " + mt.ac + Environment.NewLine +
-                    "HP: " + mt.hp;
-
-                this.Controls.Add(thisGB);
-                myEncounterGBs.Add(thisGB);
+                return;
             }
+
+            FlowLayoutPanel rootPanel = new FlowLayoutPanel();
+            rootPanel.FlowDirection = System.Windows.Forms.FlowDirection.TopDown;
+            rootPanel.WrapContents = false;
+            //rootPanel.Dock = System.Windows.Forms.DockStyle.Fill;
+            rootPanel.AutoScroll = true;
+            rootPanel.Text = "Creatures";
+            rootPanel.Height = 800;
+            rootPanel.Width = 1280;
+            rootPanel.Location = new Point(leftBarWidth + 12, 12);
+
+            int row_length = 4;
+
+            for(int i=0; i<creatures.Count; i+= row_length)
+            {
+                GroupBox rootGB = new GroupBox();
+                rootGB.Parent = rootPanel;
+                rootGB.Height = 200;
+                rootGB.Width = 1200;
+                rootGB.Location = new Point(0, (i/ row_length) *200);
+                for (int j=0; j< row_length; j++)
+                {
+                    if(creatures.Count <= i+j)
+                    {
+                        break;
+                    }
+                    GroupBox thisGB = new GroupBox();
+                    MonsterType mt = creatures[i + j];
+                    thisGB.Text = mt.name;
+                    thisGB.Height = 200;
+                    thisGB.Width = 300;
+                    thisGB.Parent = rootGB;
+                    thisGB.Location = new Point(thisGB.Width * (j % row_length), 0);
+
+                    Label thisLabel = new Label();
+                    thisLabel.Parent = thisGB;
+                    thisLabel.Location = new Point(12, 24);
+                    thisLabel.AutoSize = true;
+                    thisLabel.Text =
+                        "CR: " + mt.cr + Environment.NewLine +
+                        "Size: " + mt.size + Environment.NewLine +
+                        "Type: " + mt.type + Environment.NewLine +
+                        "Tags: " + mt.tags + Environment.NewLine +
+                        "Section: " + mt.section + Environment.NewLine +
+                        "Align: " + mt.alignment + Environment.NewLine +
+                        "Env: " + mt.environment + Environment.NewLine +
+                        "AC: " + mt.ac + Environment.NewLine +
+                        "HP: " + mt.hp;
+                }
+            }
+            this.Controls.Add(rootPanel);
+            creatureListPanel = rootPanel;
         }
 
-        private void GenerateRandomEncounter()
+        private List<MonsterType> GenerateFilteredCreatureList()
         {
-            myEncounter.Clear();
-            Random random = new Random();
-
             // generate filters
-            /*
             List<string> crFilters = new List<string>();
             foreach (string cItem in crCLB.CheckedItems)
             {
                 crFilters.Add(cItem);
             }
-            */
 
             List<string> sizeFilters = new List<string>();
             foreach (string cItem in sizeCLB.CheckedItems)
@@ -300,7 +313,8 @@ namespace GoblinBrawlGang
             {
                 if
                     (
-                        (sizeFilters.Contains(mt.size) || sizeFilters.Count == 0)
+                        (crFilters.Contains(mt.cr) || crFilters.Count == 0)
+                     && (sizeFilters.Contains(mt.type) || sizeFilters.Count == 0)
                      && (typeFilters.Contains(mt.type) || typeFilters.Count == 0)
                      && (tagsFilters.Contains(mt.tags) || tagsFilters.Count == 0)
                      && (sectionFilters.Contains(mt.section) || sectionFilters.Count == 0)
@@ -314,29 +328,10 @@ namespace GoblinBrawlGang
 
             if (filteredList.Count == 0)
             {
-                // TODO throw a helpful error message
-                // "Those filters were incompatible."
-                return;
+                return null;
             }
-
-            // build the new monstertype list: the new encounter
-            foreach (Monster mob in mobList)
-            {
-                List<MonsterType> thisCRList = filteredList.FindAll(e => CombatRating.CRStringToEnum(e.cr) == mob.cr);
-                if (thisCRList.Count == 0)
-                {
-                    myEncounter.Clear();
-                    // TODO throw a helpful error message
-                    // "There are no such creatures at this CR level: " + mob.cr.ToString()
-                    return;
-                }
-                MonsterType chosenMob = thisCRList[random.Next(thisCRList.Count)];
-                myEncounter.Add(chosenMob);
-            }
-
-
+            return filteredList;
         }
-
 
     }
 }

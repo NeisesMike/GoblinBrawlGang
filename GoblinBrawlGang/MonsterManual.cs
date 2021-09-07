@@ -223,5 +223,95 @@ namespace GoblinBrawlGang
                 environmentDict.Add(thisMonster.environment, new List<MonsterType>() { thisMonster });
             }
         }
+
+
+        // verify alignment filters
+        public static bool IsProperAlignment(MonsterType mt, List<string> filters)
+        {
+            // if this creature is unaligned, and we've selected unaligned as a filter,
+            // allow it regardless of the other filters.
+            if (mt.alignment == "unaligned" && filters.Contains("Unaligned"))
+            {
+                return true;
+            }
+
+            foreach (string align in filters)
+            {
+                // return false when the monster has an alignment type that we disallow,
+                // or when it fails to have an alignment type we require
+                switch (align)
+                {
+                    case ("Good"):
+                        if (!mt.alignment.Contains("good"))
+                        {
+                            return false;
+                        }
+                        break;
+                    case ("GvE: Neutral"):
+                        if (mt.alignment.Contains("good") || mt.alignment.Contains("evil"))
+                        {
+                            return false;
+                        }
+                        break;
+                    case ("Evil"):
+                        if (!mt.alignment.Contains("evil"))
+                        {
+                            return false;
+                        }
+                        break;
+                    case ("Lawful"):
+                        if (!mt.alignment.Contains("lawful"))
+                        {
+                            return false;
+                        }
+                        break;
+                    case ("LvC: Neutral"):
+                        if (mt.alignment.Contains("lawful") || mt.alignment.Contains("chaotic"))
+                        {
+                            return false;
+                        }
+                        break;
+                    case ("Chaotic"):
+                        if (!mt.alignment.Contains("chaotic"))
+                        {
+                            return false;
+                        }
+                        break;
+                    case ("Non-Good"):
+                        if (mt.alignment.Contains("good"))
+                        {
+                            return false;
+                        }
+                        break;
+                    case ("Non-Evil"):
+                        if (!mt.alignment.Contains("evil"))
+                        {
+                            return false;
+                        }
+                        break;
+                    case ("Non-Lawful"):
+                        if (mt.alignment.Contains("lawful"))
+                        {
+                            return false;
+                        }
+                        break;
+                    case ("Non-Chaotic"):
+                        if (mt.alignment.Contains("chaotic"))
+                        {
+                            return false;
+                        }
+                        break;
+                    case ("Unaligned"):
+                        if (!mt.alignment.Contains("unaligned"))
+                        {
+                            return false;
+                        }
+                        break;
+                    default:
+                        break;
+                }
+            }
+            return true;
+        }
     }
 }

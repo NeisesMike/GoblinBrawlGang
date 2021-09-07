@@ -110,7 +110,7 @@ namespace GoblinBrawlGang
 
             void LoadEncounterBuilder(object sender, EventArgs e)
             {
-                EncounterBuilderForm EBform = new EncounterBuilderForm(mobList, printDict);
+                EncounterBuilder EBform = new EncounterBuilder(mobList, printDict);
                 EBform.Show();
             }
 

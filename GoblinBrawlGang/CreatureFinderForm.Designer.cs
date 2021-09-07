@@ -1,7 +1,7 @@
 ﻿
 namespace GoblinBrawlGang
 {
-    partial class EncounterBuilder
+    partial class CreatureFinder
     {
         /// <summary>
         /// Required designer variable.

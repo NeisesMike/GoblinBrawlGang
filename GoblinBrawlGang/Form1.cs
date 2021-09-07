@@ -60,6 +60,12 @@ namespace GoblinBrawlGang
             InitDebugPlayerList();
             this.GraphicsUpdate();
         }
+
+        void CreateCreatureFinderForm(object sender, EventArgs e)
+        {
+            CreatureFinder CFform = new CreatureFinder();
+            CFform.Show();
+        }
         private void LoadMenu()
         {
             CreateButtonPlease("Reset Players", ResetPlayers);
@@ -69,6 +75,7 @@ namespace GoblinBrawlGang
             CreateButtonPlease("Medium Encounter", CreateEncounters(Difficulty.Medium));
             CreateButtonPlease("Hard Encounter", CreateEncounters(Difficulty.Hard));
             CreateButtonPlease("Deadly Encounter", CreateEncounters(Difficulty.Deadly));
+            CreateButtonPlease("Creature Finder", CreateCreatureFinderForm);
             CreateDropdownPlease("Default Player Level");
         }
         private void CreateButtonPlease(string name, EventHandler func)
