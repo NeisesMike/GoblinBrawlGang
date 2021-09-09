@@ -29,9 +29,9 @@ namespace GoblinBrawlGang
 
         public EncounterBuilder(List<Monster> inMobList, SortedDictionary<int, Tuple<string, int>> printDict)
         {
+            InitializeComponent();
             mobList = inMobList;
             this.AutoSize = true;
-            //InitializeComponent();
             Label mobs = GetMobListLabel(printDict, mobList.Count);
             this.Controls.Add(mobs);
             Button rando = GetRandomizerButton(12, 12 + mobs.Height + 12);

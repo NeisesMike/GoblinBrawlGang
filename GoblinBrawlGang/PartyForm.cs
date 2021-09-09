@@ -60,8 +60,7 @@ namespace GoblinBrawlGang
             InitDebugPlayerList();
             this.GraphicsUpdate();
         }
-
-        void CreateCreatureFinderForm(object sender, EventArgs e)
+        private void CreateCreatureFinderForm(object sender, EventArgs e)
         {
             CreatureFinder CFform = new CreatureFinder();
             CFform.Show();
@@ -71,6 +70,7 @@ namespace GoblinBrawlGang
             CreateButtonPlease("Reset Players", ResetPlayers);
             CreateButtonPlease("Add Player", AddPlayer);
             CreateButtonPlease("Remove Player", RemovePlayer);
+            CreateButtonPlease("Empty Encounter", LoadEncounterBuilder);
             CreateButtonPlease("Easy Encounter", CreateEncounters(Difficulty.Easy));
             CreateButtonPlease("Medium Encounter", CreateEncounters(Difficulty.Medium));
             CreateButtonPlease("Hard Encounter", CreateEncounters(Difficulty.Hard));
@@ -122,7 +122,6 @@ namespace GoblinBrawlGang
 
             this.Controls.Add(thisGB);
         }
-
         private void WipeScreen()
         {
             this.Controls.Clear();
@@ -181,7 +180,11 @@ namespace GoblinBrawlGang
             }
             return UpdateEncounters;
         }
-
+        private void LoadEncounterBuilder(object sender, EventArgs e)
+        {
+            NewEncounterBuilder EBform = new NewEncounterBuilder();
+            EBform.Show();
+        }
 
 
 

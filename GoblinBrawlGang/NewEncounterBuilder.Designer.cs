@@ -1,7 +1,7 @@
 ﻿
 namespace GoblinBrawlGang
 {
-    partial class EncounterBuilder
+    partial class NewEncounterBuilder
     {
         /// <summary>
         /// Required designer variable.
@@ -32,8 +32,7 @@ namespace GoblinBrawlGang
             this.components = new System.ComponentModel.Container();
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(800, 450);
-            this.Text = "EncounterBuilder";
-            this.Name = "EncounterBuilder";
+            this.Text = "NewEncounterBuilder";
         }
 
         #endregion

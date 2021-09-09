@@ -242,7 +242,7 @@ namespace GoblinBrawlGang
                 switch (align)
                 {
                     case ("Good"):
-                        if (!mt.alignment.Contains("good"))
+                        if (!mt.alignment.Contains("good") || mt.alignment.Contains("non-good"))
                         {
                             return false;
                         }
@@ -254,13 +254,13 @@ namespace GoblinBrawlGang
                         }
                         break;
                     case ("Evil"):
-                        if (!mt.alignment.Contains("evil"))
+                        if (!mt.alignment.Contains("evil") || mt.alignment.Contains("non-evil"))
                         {
                             return false;
                         }
                         break;
                     case ("Lawful"):
-                        if (!mt.alignment.Contains("lawful"))
+                        if (!mt.alignment.Contains("lawful") || mt.alignment.Contains("non-lawful"))
                         {
                             return false;
                         }
@@ -272,31 +272,31 @@ namespace GoblinBrawlGang
                         }
                         break;
                     case ("Chaotic"):
-                        if (!mt.alignment.Contains("chaotic"))
+                        if (!mt.alignment.Contains("chaotic") || mt.alignment.Contains("non-chaotic"))
                         {
                             return false;
                         }
                         break;
                     case ("Non-Good"):
-                        if (mt.alignment.Contains("good"))
+                        if (mt.alignment.Contains("good") && !mt.alignment.Contains("non-good"))
                         {
                             return false;
                         }
                         break;
                     case ("Non-Evil"):
-                        if (!mt.alignment.Contains("evil"))
+                        if (!mt.alignment.Contains("evil") && !mt.alignment.Contains("non-evil"))
                         {
                             return false;
                         }
                         break;
                     case ("Non-Lawful"):
-                        if (mt.alignment.Contains("lawful"))
+                        if (mt.alignment.Contains("lawful") && !mt.alignment.Contains("non-lawful"))
                         {
                             return false;
                         }
                         break;
                     case ("Non-Chaotic"):
-                        if (mt.alignment.Contains("chaotic"))
+                        if (mt.alignment.Contains("chaotic") && !mt.alignment.Contains("non-chaotic"))
                         {
                             return false;
                         }
@@ -312,6 +312,39 @@ namespace GoblinBrawlGang
                 }
             }
             return true;
+        }
+        public static bool IsProperTag(MonsterType mt, List<string> filters)
+        {
+            foreach(string str in filters)
+            {
+                if(mt.tags.Contains(str))
+                {
+                    return true;
+                }
+            }
+            return false;
+        }
+        public static bool IsProperSection(MonsterType mt, List<string> filters)
+        {
+            foreach (string str in filters)
+            {
+                if (mt.section.Contains(str))
+                {
+                    return true;
+                }
+            }
+            return false;
+        }
+        public static bool IsProperEnv(MonsterType mt, List<string> filters)
+        {
+            foreach (string str in filters)
+            {
+                if (mt.environment.Contains(str))
+                {
+                    return true;
+                }
+            }
+            return false;
         }
     }
 }

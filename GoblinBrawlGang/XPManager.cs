@@ -110,7 +110,8 @@ namespace GoblinBrawlGang
 
             void LoadEncounterBuilder(object sender, EventArgs e)
             {
-                EncounterBuilder EBform = new EncounterBuilder(mobList, printDict);
+                NewEncounterBuilder EBform = new NewEncounterBuilder(mobList);
+                // printDict.Select(x => new Tuple<CombatRating.CR,int>((CombatRating.CR)x.Key, x.Value.Item2))
                 EBform.Show();
             }
 
@@ -141,7 +142,15 @@ namespace GoblinBrawlGang
             }
             return encounters;
         }
-
+        public static double GetEncounterAXPThreshold(Difficulty diff)
+        {
+            double threshold = 0;
+            foreach(Player pl in GoblinBrawlGang.players)
+            {
+                threshold += XPThresholdsTable[pl.level - 1, ((int)diff)];
+            }
+            return threshold;
+        }
 
 
         public static Dictionary<CombatRating.CR, Tuple<int, string>> monsters = new Dictionary<CombatRating.CR, Tuple<int, string>>()

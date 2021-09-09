@@ -28,19 +28,28 @@ namespace GoblinBrawlGang
 
         public CreatureFinder()
         {
+            InitializeComponent();
             this.AutoSize = true;
-            //InitializeComponent();
-            Button rando = GetRandomizerButton(12, 12);
+            Button rando = GetRandomizerButton(12, 12, false, CombatRating.CR.zed, null);
             this.Controls.Add(rando);
-            Button resetti = GetResetFiltersButton(rando.Width + 12, 12);
+            Button resetti = GetResetFiltersButton(rando.Width + 12, 12, false);
             this.Controls.Add(resetti);
-            AddDropDowns(12 + rando.Height + 12);
+            AddDropDowns(12 + rando.Height + 12, false);
         }
-
+        public CreatureFinder(CombatRating.CR cr, NewEncounterBuilder neb)
+        {
+            InitializeComponent();
+            this.AutoSize = true;
+            Button rando = GetRandomizerButton(12, 12, true, cr, neb);
+            this.Controls.Add(rando);
+            Button resetti = GetResetFiltersButton(rando.Width + 12, 12, true);
+            this.Controls.Add(resetti);
+            AddDropDowns(12 + rando.Height + 12, true);
+            PrintEncounter(GenerateFilteredCreatureList(true, cr), true, neb);
+        }
         private void CreatureFinder_Load(object sender, EventArgs e)
         {
         }
-
         public Label GetMobListLabel(SortedDictionary<int, Tuple<string, int>> printDict, int numMobs)
         {
             Label monsterSeqeuence = new Label();
@@ -53,13 +62,20 @@ namespace GoblinBrawlGang
             }
             return monsterSeqeuence;
         }
-
         private void WipeEncounters()
         {
             Controls.Remove(creatureListPanel);
         }
-        private void ResetFilters()
+        private void ResetFilters(bool isMobCF)
         {
+            if(!isMobCF)
+            {
+                crCLB.ClearSelected();
+                for (int i = 0; i < crCLB.Items.Count; i++)
+                {
+                    crCLB.SetItemChecked(i, false);
+                }
+            }
             sizeCLB.ClearSelected();
             for (int i = 0; i < sizeCLB.Items.Count; i++)
             {
@@ -91,13 +107,13 @@ namespace GoblinBrawlGang
                 environmentCLB.SetItemChecked(i, false);
             }
         }
-        private Button GetRandomizerButton(int x, int y)
+        private Button GetRandomizerButton(int x, int y, bool isMobCF, CombatRating.CR cr, NewEncounterBuilder neb)
         {
             void RandomGo(object sender, EventArgs e)
             {
                 WipeEncounters();
-                List<MonsterType> creatures = GenerateFilteredCreatureList();
-                PrintEncounter(creatures);
+                List<MonsterType> creatures = GenerateFilteredCreatureList(isMobCF, cr);
+                PrintEncounter(creatures, isMobCF, neb);
             }
             Button rando = new Button();
             rando.Text = "Filter";
@@ -107,11 +123,11 @@ namespace GoblinBrawlGang
             rando.Click += RandomGo;
             return rando;
         }
-        private Button GetResetFiltersButton(int x, int y)
+        private Button GetResetFiltersButton(int x, int y, bool isMobCF)
         {
             void RandomGo(object sender, EventArgs e)
             {
-                ResetFilters();
+                ResetFilters(isMobCF);
             }
             Button res = new Button();
             res.Text = "Reset Filters";
@@ -121,7 +137,7 @@ namespace GoblinBrawlGang
             res.Click += RandomGo;
             return res;
         }
-        private void AddDropDowns(int vertStart)
+        private void AddDropDowns(int vertStart, bool isMobCF)
         {
             int currentVertStart = vertStart;
 
@@ -136,12 +152,15 @@ namespace GoblinBrawlGang
                 return thisCLB;
             }
 
-            crCLB = GetCLB("cr");
-            foreach (KeyValuePair<string, List<MonsterType>> pair in MonsterManual.crDict)
+            if (!isMobCF)
             {
-                crCLB.Items.Add(pair.Key);
+                crCLB = GetCLB("cr");
+                foreach (KeyValuePair<string, List<MonsterType>> pair in MonsterManual.crDict)
+                {
+                    crCLB.Items.Add(pair.Key);
+                }
+                this.Controls.Add(crCLB);
             }
-            this.Controls.Add(crCLB);
 
             sizeCLB = GetCLB("size");
             foreach (KeyValuePair<string, List<MonsterType>> pair in MonsterManual.sizeDict)
@@ -202,8 +221,7 @@ namespace GoblinBrawlGang
             }
             this.Controls.Add(environmentCLB);
         }
-
-        private void PrintEncounter(List<MonsterType> creatures)
+        private void PrintEncounter(List<MonsterType> creatures, bool isMobCF, NewEncounterBuilder neb)
         {
             if(creatures==null)
             {
@@ -213,14 +231,13 @@ namespace GoblinBrawlGang
             FlowLayoutPanel rootPanel = new FlowLayoutPanel();
             rootPanel.FlowDirection = System.Windows.Forms.FlowDirection.TopDown;
             rootPanel.WrapContents = false;
-            //rootPanel.Dock = System.Windows.Forms.DockStyle.Fill;
             rootPanel.AutoScroll = true;
             rootPanel.Text = "Creatures";
             rootPanel.Height = 800;
             rootPanel.Width = 1280;
             rootPanel.Location = new Point(leftBarWidth + 12, 12);
 
-            int row_length = 4;
+            int row_length = 6;
 
             for(int i=0; i<creatures.Count; i+= row_length)
             {
@@ -239,7 +256,7 @@ namespace GoblinBrawlGang
                     MonsterType mt = creatures[i + j];
                     thisGB.Text = mt.name;
                     thisGB.Height = 200;
-                    thisGB.Width = 300;
+                    thisGB.Width = 200;
                     thisGB.Parent = rootGB;
                     thisGB.Location = new Point(thisGB.Width * (j % row_length), 0);
 
@@ -257,19 +274,45 @@ namespace GoblinBrawlGang
                         "Env: " + mt.environment + Environment.NewLine +
                         "AC: " + mt.ac + Environment.NewLine +
                         "HP: " + mt.hp;
+
+                    if(isMobCF)
+                    {
+                        Button thisButton = new Button();
+                        thisButton.Text = "Choose";
+                        thisButton.Height = 25;
+                        thisButton.Width = 75;
+                        thisButton.Parent = thisGB;
+                        thisButton.Location = new Point(12, 170);
+                        thisButton.Click += ChooseThisCreatureForEncounter(CombatRating.CRStringToEnum(mt.cr), neb, mt);
+                    }
                 }
             }
             this.Controls.Add(rootPanel);
             creatureListPanel = rootPanel;
         }
-
-        private List<MonsterType> GenerateFilteredCreatureList()
+        public System.EventHandler ChooseThisCreatureForEncounter(CombatRating.CR cr, NewEncounterBuilder neb, MonsterType thisMob)
+        {
+            void ThisButton_Click(object sender, EventArgs e)
+            {
+                neb.SwapCRMobForMob(cr, thisMob);
+                this.Close();
+            }
+            return ThisButton_Click;
+        }
+        private List<MonsterType> GenerateFilteredCreatureList(bool isMobCF, CombatRating.CR cr)
         {
             // generate filters
             List<string> crFilters = new List<string>();
-            foreach (string cItem in crCLB.CheckedItems)
+            if (isMobCF)
             {
-                crFilters.Add(cItem);
+                crFilters.Add(CombatRating.CREnumToString(cr));
+            }
+            else
+            {
+                foreach (string cItem in crCLB.CheckedItems)
+                {
+                    crFilters.Add(cItem);
+                }
             }
 
             List<string> sizeFilters = new List<string>();
@@ -314,7 +357,7 @@ namespace GoblinBrawlGang
                 if
                     (
                         (crFilters.Contains(mt.cr) || crFilters.Count == 0)
-                     && (sizeFilters.Contains(mt.type) || sizeFilters.Count == 0)
+                     && (sizeFilters.Contains(mt.size) || sizeFilters.Count == 0)
                      && (typeFilters.Contains(mt.type) || typeFilters.Count == 0)
                      && (tagsFilters.Contains(mt.tags) || tagsFilters.Count == 0)
                      && (sectionFilters.Contains(mt.section) || sectionFilters.Count == 0)
@@ -332,6 +375,5 @@ namespace GoblinBrawlGang
             }
             return filteredList;
         }
-
     }
 }
