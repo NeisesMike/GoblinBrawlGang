@@ -140,6 +140,15 @@ namespace GoblinBrawlGang
             }
 
             LoadMenu();
+
+            foreach(Form frm in Application.OpenForms)
+            {
+                var temp = frm as NewEncounterBuilder;
+                if(temp != null)
+                {
+                    temp.UpdateGraphics();
+                }
+            }
         }
         private void ResetPlayers(object sender, EventArgs e)
         {

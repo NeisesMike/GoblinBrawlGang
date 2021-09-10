@@ -238,14 +238,15 @@ namespace GoblinBrawlGang
             rootPanel.Location = new Point(leftBarWidth + 12, 12);
 
             int row_length = 6;
+            int row_height = 225;
 
             for(int i=0; i<creatures.Count; i+= row_length)
             {
                 GroupBox rootGB = new GroupBox();
                 rootGB.Parent = rootPanel;
-                rootGB.Height = 200;
+                rootGB.Height = row_height;
                 rootGB.Width = 1200;
-                rootGB.Location = new Point(0, (i/ row_length) *200);
+                rootGB.Location = new Point(0, (i/ row_length) * row_height);
                 for (int j=0; j< row_length; j++)
                 {
                     if(creatures.Count <= i+j)
@@ -255,7 +256,7 @@ namespace GoblinBrawlGang
                     GroupBox thisGB = new GroupBox();
                     MonsterType mt = creatures[i + j];
                     thisGB.Text = mt.name;
-                    thisGB.Height = 200;
+                    thisGB.Height = row_height;
                     thisGB.Width = 200;
                     thisGB.Parent = rootGB;
                     thisGB.Location = new Point(thisGB.Width * (j % row_length), 0);
@@ -275,15 +276,23 @@ namespace GoblinBrawlGang
                         "AC: " + mt.ac + Environment.NewLine +
                         "HP: " + mt.hp;
 
-                    if(isMobCF)
+                    Button newEncButton = new Button();
+                    newEncButton.Text = "New Encounter";
+                    newEncButton.Height = 25;
+                    newEncButton.Width = 125;
+                    newEncButton.Parent = thisGB;
+                    newEncButton.Location = new Point(12, 165);
+                    newEncButton.Click += StartNewEncounterWithCreature(mt);
+
+                    if (isMobCF)
                     {
-                        Button thisButton = new Button();
-                        thisButton.Text = "Choose";
-                        thisButton.Height = 25;
-                        thisButton.Width = 75;
-                        thisButton.Parent = thisGB;
-                        thisButton.Location = new Point(12, 170);
-                        thisButton.Click += ChooseThisCreatureForEncounter(CombatRating.CRStringToEnum(mt.cr), neb, mt);
+                        Button chooseButton = new Button();
+                        chooseButton.Text = "Choose";
+                        chooseButton.Height = 25;
+                        chooseButton.Width = 125;
+                        chooseButton.Parent = thisGB;
+                        chooseButton.Location = new Point(12, 165 + 25);
+                        chooseButton.Click += ChooseThisCreatureForEncounter(CombatRating.CRStringToEnum(mt.cr), neb, mt);
                     }
                 }
             }
@@ -374,6 +383,15 @@ namespace GoblinBrawlGang
                 return null;
             }
             return filteredList;
+        }
+        public System.EventHandler StartNewEncounterWithCreature(MonsterType thisMob)
+        {
+            void ThisButton_Click(object sender, EventArgs e)
+            {
+                NewEncounterBuilder EBform = new NewEncounterBuilder(thisMob);
+                EBform.Show();
+            }
+            return ThisButton_Click;
         }
     }
 }

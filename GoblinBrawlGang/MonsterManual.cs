@@ -224,8 +224,6 @@ namespace GoblinBrawlGang
             }
         }
 
-
-        // verify alignment filters
         public static bool IsProperAlignment(MonsterType mt, List<string> filters)
         {
             // if this creature is unaligned, and we've selected unaligned as a filter,

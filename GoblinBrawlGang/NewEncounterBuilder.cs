@@ -42,6 +42,14 @@ namespace GoblinBrawlGang
                 AddToCRMobList(mob.cr);
             }
         }
+        public NewEncounterBuilder(MonsterType mob)
+        {
+            this.AutoSize = true;
+            this.AutoSizeMode = AutoSizeMode.GrowAndShrink;
+            InitializeComponent();
+            InitStaticComponents();
+            AddToMTList(mob);
+        }
 
         public void UpdateGraphics()
         {
