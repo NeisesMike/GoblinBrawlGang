@@ -56,12 +56,13 @@ namespace GoblinBrawlGang
             UpdateCRMobList();
             UpdateMTList();
             UpdateEncounterDifficulty();
+            UpdateXPMultiplierNotes();
         }
         public void InitStaticComponents()
         {
             AddCRButtons();
             AddControlButtons();
-            AddXPMultiplierNotes();
+            UpdateXPMultiplierNotes();
             BuildDropDowns();
             UpdateGraphics();
         }
@@ -390,8 +391,9 @@ namespace GoblinBrawlGang
 
             Controls.Add(DifficultyGB);
         }
-        public void AddXPMultiplierNotes()
+        public void UpdateXPMultiplierNotes()
         {
+            Controls.Remove(AXPGB);
             AXPGB = new GroupBox();
             AXPGB.Location = new Point(12, ControlButtonsGB.Location.Y + ControlButtonsGB.Height);
             AXPGB.AutoSize = true;
