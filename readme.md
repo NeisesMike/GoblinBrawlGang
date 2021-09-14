@@ -11,3 +11,6 @@ A windows forms app, meant to be a replacement for the late Kobold Fight Club.
 ## Usage
 
 Please see the explanatory video here: https://youtu.be/JTjocWMlW1w 
+
+## Download
+See the releases here: https://github.com/NeisesMike/GoblinBrawlGang/releases/tag/v2.2.1
