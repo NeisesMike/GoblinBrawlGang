@@ -3,6 +3,7 @@
 A windows forms app, meant to be a replacement for the late Kobold Fight Club.
 
 ## Primary Features
+* Automatically updating calculations. Don't do the math yourself!
 * Encounter Builder: build an encounter from scratch or randomize it from
   nothing. Always stay aware of your XP constraints with automatically updating values between windows.
 * Creature Finder: Apply any number of filters to the provided Monster Manual
