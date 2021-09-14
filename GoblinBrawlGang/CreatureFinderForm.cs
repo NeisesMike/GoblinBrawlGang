@@ -13,7 +13,15 @@ namespace GoblinBrawlGang
 {
     public partial class CreatureFinder : Form
     {
+        private enum CheckedData
+        {
+            None,
+            Checked,
+            Unchecked
+        }
         public FlowLayoutPanel creatureListPanel;
+
+        public TextBox nameFilter = new TextBox();
 
         public CheckedListBox crCLB;
         public CheckedListBox sizeCLB;
@@ -30,23 +38,152 @@ namespace GoblinBrawlGang
         {
             InitializeComponent();
             this.AutoSize = true;
+
             Button rando = GetRandomizerButton(12, 12, false, CombatRating.CR.zed, null);
             this.Controls.Add(rando);
-            Button resetti = GetResetFiltersButton(rando.Width + 12, 12, false);
+
+            nameFilter = new TextBox();
+            nameFilter.Location = new Point(12, rando.Location.Y + rando.Height + 12);
+            nameFilter.TextChanged += MaybeUpdateListsAfterTyping();
+            this.Controls.Add(nameFilter);
+
+            AddDropDowns(12 + nameFilter.Location.Y + nameFilter.Height + 12);
+            nameFilter.Width = crCLB.Width;
+
+            Button resetti = GetResetFiltersButton((crCLB.Width + crCLB.Location.X) - rando.Width, 12, false);
             this.Controls.Add(resetti);
-            AddDropDowns(12 + rando.Height + 12, false);
         }
         public CreatureFinder(CombatRating.CR cr, NewEncounterBuilder neb)
         {
             InitializeComponent();
             this.AutoSize = true;
+
             Button rando = GetRandomizerButton(12, 12, true, cr, neb);
             this.Controls.Add(rando);
-            Button resetti = GetResetFiltersButton(rando.Width + 12, 12, true);
+
+            nameFilter = new TextBox();
+            nameFilter.Location = new Point(12, rando.Location.Y + rando.Height + 12);
+            nameFilter.TextChanged += MaybeUpdateListsAfterTypingMobCF(cr, neb);
+            this.Controls.Add(nameFilter);
+
+            AddDropDownsMobCF(12 + nameFilter.Location.Y + nameFilter.Height + 12, cr, neb);
+            PrintFilteredManual(GenerateFilteredCreatureListGeneral(true, cr, CheckedData.None, null, null), true, neb);
+
+            nameFilter.Width = sizeCLB.Width;
+            Button resetti = GetResetFiltersButton((sizeCLB.Width + sizeCLB.Location.X) - rando.Width, 12, true);
             this.Controls.Add(resetti);
-            AddDropDowns(12 + rando.Height + 12, true);
-            PrintEncounter(GenerateFilteredCreatureList(true, cr), true, neb);
         }
+        private System.EventHandler MaybeUpdateListsAfterTyping()
+        {
+            void ThisButton_Click(object sender, EventArgs e)
+            {
+                if (nameFilter.Text.Length > 1)
+                {
+                    WipeEncounters();
+                    List<MonsterType> creatures = GenerateFilteredCreatureListGeneral(false, CombatRating.CR.thirty, CheckedData.None, null, null);
+                    PrintFilteredManual(creatures, false, null);
+                }
+            }
+            return ThisButton_Click;
+        }
+        private System.EventHandler MaybeUpdateListsAfterTypingMobCF(CombatRating.CR cr, NewEncounterBuilder neb)
+        {
+            void ThisButton_Click(object sender, EventArgs e)
+            {
+                if (nameFilter.Text.Length > 1)
+                {
+                    WipeEncounters();
+                    List<MonsterType> creatures = GenerateFilteredCreatureListGeneral(true, cr, CheckedData.None, null, null);
+                    PrintFilteredManual(creatures, true, neb);
+                }
+            }
+            return ThisButton_Click;
+        }
+        private ItemCheckEventHandler MaybeUpdateListsAfterBoxChecked(CheckedListBox clb)
+        {
+            void ThisButton_Click(object sender, ItemCheckEventArgs e)
+            {
+                if (e.CurrentValue == CheckState.Checked)
+                {
+                    if (GetTotalItemsChecked(false) > 2)
+                    {
+                        WipeEncounters();
+                        List<MonsterType> creatures = GenerateFilteredCreatureListGeneral(false, CombatRating.CR.thirty, CheckedData.Unchecked, clb, clb.Items[e.Index].ToString());
+                        PrintFilteredManual(creatures, false, null);
+                        return;
+                    }
+                }
+                else
+                {
+                    if (GetTotalItemsChecked(false) > 0)
+                    {
+                        WipeEncounters();
+                        List<MonsterType> creatures = GenerateFilteredCreatureListGeneral(false, CombatRating.CR.thirty, CheckedData.Checked, clb, clb.Items[e.Index].ToString());
+                        PrintFilteredManual(creatures, false, null);
+                        return;
+                    }
+                }
+                if (nameFilter.TextLength > 1)
+                {
+                    WipeEncounters();
+                    List<MonsterType> creatures = GenerateFilteredCreatureListGeneral(false, CombatRating.CR.thirty, e.CurrentValue == CheckState.Checked ? CheckedData.Unchecked : CheckedData.Checked, clb, clb.Items[e.Index].ToString());
+                    PrintFilteredManual(creatures, false, null);
+                    return;
+                }
+            }
+            return ThisButton_Click;
+        }
+        private ItemCheckEventHandler MaybeUpdateListsAfterBoxCheckedMobCF(CheckedListBox clb, CombatRating.CR cr, NewEncounterBuilder neb)
+        {
+            void ThisButton_Click(object sender, ItemCheckEventArgs e)
+            {
+                if (e.CurrentValue == CheckState.Checked)
+                {
+                    if (GetTotalItemsChecked(true) > 2)
+                    {
+                        WipeEncounters();
+                        List<MonsterType> creatures = GenerateFilteredCreatureListGeneral(true, cr, CheckedData.Unchecked, clb, clb.Items[e.Index].ToString());
+                        PrintFilteredManual(creatures, true, neb);
+                        return;
+                    }
+                }
+                else
+                {
+                    WipeEncounters();
+                    List<MonsterType> creatures = GenerateFilteredCreatureListGeneral(true, cr, CheckedData.Checked, clb, clb.Items[e.Index].ToString());
+                    PrintFilteredManual(creatures, true, neb);
+                    return;
+                }
+                if (nameFilter.TextLength > 1)
+                {
+                    WipeEncounters();
+                    List<MonsterType> creatures = GenerateFilteredCreatureListGeneral(true, cr, CheckedData.None, clb, clb.Items[e.Index].ToString());
+                    PrintFilteredManual(creatures, true, neb);
+                    return;
+                }
+            }
+            return ThisButton_Click;
+        }
+
+        private int GetTotalItemsChecked(bool isMobCF)
+        {
+            int ret = 0;
+            if (!isMobCF)
+            {
+                ret += crCLB.CheckedItems.Count;
+            }
+            ret += sizeCLB.CheckedItems.Count;
+            ret += typeCLB.CheckedItems.Count;
+            ret += tagsCLB.CheckedItems.Count;
+            ret += sectionCLB.CheckedItems.Count;
+            ret += alignmentCLB.CheckedItems.Count;
+            ret += environmentCLB.CheckedItems.Count;
+            return ret;
+        }
+
+
+
+
         private void CreatureFinder_Load(object sender, EventArgs e)
         {
         }
@@ -68,6 +205,7 @@ namespace GoblinBrawlGang
         }
         private void ResetFilters(bool isMobCF)
         {
+            nameFilter.Text = "";
             if(!isMobCF)
             {
                 crCLB.ClearSelected();
@@ -112,13 +250,13 @@ namespace GoblinBrawlGang
             void RandomGo(object sender, EventArgs e)
             {
                 WipeEncounters();
-                List<MonsterType> creatures = GenerateFilteredCreatureList(isMobCF, cr);
-                PrintEncounter(creatures, isMobCF, neb);
+                List<MonsterType> creatures = GenerateFilteredCreatureListGeneral(isMobCF, cr, CheckedData.None, null, null);
+                PrintFilteredManual(creatures, isMobCF, neb);
             }
             Button rando = new Button();
             rando.Text = "Filter";
             rando.Height = 50;
-            rando.Width = 100;
+            rando.Width = 125;
             rando.Location = new Point(x, y);
             rando.Click += RandomGo;
             return rando;
@@ -132,12 +270,12 @@ namespace GoblinBrawlGang
             Button res = new Button();
             res.Text = "Reset Filters";
             res.Height = 50;
-            res.Width = 100;
+            res.Width = 125;
             res.Location = new Point(x, y);
             res.Click += RandomGo;
             return res;
         }
-        private void AddDropDowns(int vertStart, bool isMobCF)
+        private void AddDropDowns(int vertStart)
         {
             int currentVertStart = vertStart;
 
@@ -149,17 +287,90 @@ namespace GoblinBrawlGang
                 thisCLB.Width = leftBarWidth;
                 thisCLB.Location = new Point(12, currentVertStart);
                 currentVertStart += thisCLB.Height + 12;
+                thisCLB.ItemCheck += MaybeUpdateListsAfterBoxChecked(thisCLB);
                 return thisCLB;
             }
 
-            if (!isMobCF)
+            crCLB = GetCLB("cr");
+            foreach (KeyValuePair<string, List<MonsterType>> pair in MonsterManual.crDict)
             {
-                crCLB = GetCLB("cr");
-                foreach (KeyValuePair<string, List<MonsterType>> pair in MonsterManual.crDict)
+                crCLB.Items.Add(pair.Key);
+            }
+            this.Controls.Add(crCLB);
+
+            sizeCLB = GetCLB("size");
+            foreach (KeyValuePair<string, List<MonsterType>> pair in MonsterManual.sizeDict)
+            {
+                sizeCLB.Items.Add(pair.Key);
+            }
+            this.Controls.Add(sizeCLB);
+
+            typeCLB = GetCLB("type");
+            foreach (KeyValuePair<string, List<MonsterType>> pair in MonsterManual.typeDict)
+            {
+                typeCLB.Items.Add(pair.Key);
+            }
+            this.Controls.Add(typeCLB);
+
+            tagsCLB = GetCLB("tags");
+            foreach (KeyValuePair<string, List<MonsterType>> pair in MonsterManual.tagsDict)
+            {
+                if (pair.Key != "" && !pair.Key.Contains("any") && !pair.Key.Contains("Any"))
                 {
-                    crCLB.Items.Add(pair.Key);
+                    tagsCLB.Items.Add(pair.Key);
                 }
-                this.Controls.Add(crCLB);
+            }
+            this.Controls.Add(tagsCLB);
+
+            sectionCLB = GetCLB("section");
+            foreach (KeyValuePair<string, List<MonsterType>> pair in MonsterManual.sectionDict)
+            {
+                if (pair.Key != "")
+                {
+                    sectionCLB.Items.Add(pair.Key);
+                }
+            }
+            this.Controls.Add(sectionCLB);
+
+            alignmentCLB = GetCLB("alignment");
+            alignmentCLB.Items.Add("Good");
+            alignmentCLB.Items.Add("GvE: Neutral");
+            alignmentCLB.Items.Add("Evil");
+            alignmentCLB.Items.Add("Lawful");
+            alignmentCLB.Items.Add("LvC: Neutral");
+            alignmentCLB.Items.Add("Chaotic");
+            alignmentCLB.Items.Add("Non-Good");
+            alignmentCLB.Items.Add("Non-Evil");
+            alignmentCLB.Items.Add("Non-Lawful");
+            alignmentCLB.Items.Add("Non-Chaotic");
+            alignmentCLB.Items.Add("Unaligned");
+            this.Controls.Add(alignmentCLB);
+
+            environmentCLB = GetCLB("environment");
+            foreach (KeyValuePair<string, List<MonsterType>> pair in MonsterManual.environmentDict)
+            {
+                if (pair.Key.Contains(",") || pair.Key == "")
+                {
+                    continue;
+                }
+                environmentCLB.Items.Add(pair.Key);
+            }
+            this.Controls.Add(environmentCLB);
+        }
+        private void AddDropDownsMobCF(int vertStart, CombatRating.CR cr, NewEncounterBuilder neb)
+        {
+            int currentVertStart = vertStart;
+
+            CheckedListBox GetCLB(string name)
+            {
+                CheckedListBox thisCLB = new CheckedListBox();
+                thisCLB.Text = name;
+                thisCLB.Height = 100;
+                thisCLB.Width = leftBarWidth;
+                thisCLB.Location = new Point(12, currentVertStart);
+                currentVertStart += thisCLB.Height + 12;
+                thisCLB.ItemCheck += MaybeUpdateListsAfterBoxCheckedMobCF(thisCLB, cr, neb);
+                return thisCLB;
             }
 
             sizeCLB = GetCLB("size");
@@ -221,9 +432,10 @@ namespace GoblinBrawlGang
             }
             this.Controls.Add(environmentCLB);
         }
-        private void PrintEncounter(List<MonsterType> creatures, bool isMobCF, NewEncounterBuilder neb)
+        private void PrintFilteredManual(List<MonsterType> creatures, bool isMobCF, NewEncounterBuilder neb)
         {
-            if(creatures==null)
+            //  if isMobCF==true MUST pass neb!=null
+            if (creatures==null)
             {
                 return;
             }
@@ -308,8 +520,10 @@ namespace GoblinBrawlGang
             }
             return ThisButton_Click;
         }
-        private List<MonsterType> GenerateFilteredCreatureList(bool isMobCF, CombatRating.CR cr)
+        private List<MonsterType> GenerateFilteredCreatureListGeneral(bool isMobCF, CombatRating.CR cr, CheckedData checkData, CheckedListBox clb, string itemName)
         {
+            // cr input only considered when isMobCF
+
             // generate filters
             List<string> crFilters = new List<string>();
             if (isMobCF)
@@ -322,6 +536,14 @@ namespace GoblinBrawlGang
                 {
                     crFilters.Add(cItem);
                 }
+                if (checkData == CheckedData.Checked && clb == crCLB)
+                {
+                    crFilters.Add(itemName);
+                }
+                if (checkData == CheckedData.Unchecked && clb == crCLB)
+                {
+                    crFilters.Remove(itemName);
+                }
             }
 
             List<string> sizeFilters = new List<string>();
@@ -329,17 +551,42 @@ namespace GoblinBrawlGang
             {
                 sizeFilters.Add(cItem);
             }
+            if(checkData == CheckedData.Checked && clb == sizeCLB)
+            {
+                sizeFilters.Add(itemName);
+            }
+            if (checkData == CheckedData.Unchecked && clb == sizeCLB)
+            {
+                sizeFilters.Remove(itemName);
+            }
 
             List<string> typeFilters = new List<string>();
             foreach (string cItem in typeCLB.CheckedItems)
             {
                 typeFilters.Add(cItem);
             }
+            if (checkData == CheckedData.Checked && clb == typeCLB)
+            {
+                typeFilters.Add(itemName);
+            }
+            if (checkData == CheckedData.Unchecked && clb == typeCLB)
+            {
+                typeFilters.Remove(itemName);
+            }
+
 
             List<string> tagsFilters = new List<string>();
             foreach (string cItem in tagsCLB.CheckedItems)
             {
                 tagsFilters.Add(cItem);
+            }
+            if (checkData == CheckedData.Checked && clb == tagsCLB)
+            {
+                tagsFilters.Add(itemName);
+            }
+            if (checkData == CheckedData.Unchecked && clb == tagsCLB)
+            {
+                tagsFilters.Remove(itemName);
             }
 
             List<string> sectionFilters = new List<string>();
@@ -347,11 +594,27 @@ namespace GoblinBrawlGang
             {
                 sectionFilters.Add(cItem);
             }
+            if (checkData == CheckedData.Checked && clb == sectionCLB)
+            {
+                sectionFilters.Add(itemName);
+            }
+            if (checkData == CheckedData.Unchecked && clb == sectionCLB)
+            {
+                sectionFilters.Remove(itemName);
+            }
 
             List<string> alignmentFilters = new List<string>();
             foreach (string cItem in alignmentCLB.CheckedItems)
             {
                 alignmentFilters.Add(cItem);
+            }
+            if (checkData == CheckedData.Checked && clb == alignmentCLB)
+            {
+                alignmentFilters.Add(itemName);
+            }
+            if (checkData == CheckedData.Unchecked && clb == alignmentCLB)
+            {
+                alignmentFilters.Remove(itemName);
             }
 
             List<string> environmentFilters = new List<string>();
@@ -359,19 +622,30 @@ namespace GoblinBrawlGang
             {
                 environmentFilters.Add(cItem);
             }
+            if (checkData == CheckedData.Checked && clb == environmentCLB)
+            {
+                environmentFilters.Add(itemName);
+            }
+            if (checkData == CheckedData.Unchecked && clb == environmentCLB)
+            {
+                environmentFilters.Remove(itemName);
+            }
+
 
             List<MonsterType> filteredList = new List<MonsterType>();
             foreach (MonsterType mt in MonsterManual.MyManual)
             {
                 if
                     (
-                        (crFilters.Contains(mt.cr) || crFilters.Count == 0)
+                        (mt.name.ToLower().Contains(nameFilter.Text.ToLower()) || nameFilter.Text == "")
+                     && (crFilters.Contains(mt.cr) || crFilters.Count == 0)
                      && (sizeFilters.Contains(mt.size) || sizeFilters.Count == 0)
                      && (typeFilters.Contains(mt.type) || typeFilters.Count == 0)
-                     && (tagsFilters.Contains(mt.tags) || tagsFilters.Count == 0)
-                     && (sectionFilters.Contains(mt.section) || sectionFilters.Count == 0)
-                     && (environmentFilters.Contains(mt.environment) || environmentFilters.Count == 0)
+                     && (MonsterManual.IsProperTag(mt, tagsFilters) || tagsFilters.Count == 0)
+                     && (MonsterManual.IsProperSection(mt, sectionFilters) || sectionFilters.Count == 0)
+                     && (MonsterManual.IsProperEnv(mt, environmentFilters) || environmentFilters.Count == 0)
                      && (MonsterManual.IsProperAlignment(mt, alignmentFilters) || alignmentFilters.Count == 0)
+
                     )
                 {
                     filteredList.Add(mt);

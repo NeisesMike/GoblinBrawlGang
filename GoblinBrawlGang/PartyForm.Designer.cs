@@ -30,7 +30,6 @@ namespace GoblinBrawlGang
         private void InitializeComponent()
         {
             this.SuspendLayout();
-         
             // 
             // GoblinBrawlGang
             // 
@@ -45,7 +44,6 @@ namespace GoblinBrawlGang
         }
 
         #endregion
-
     }
 }
 

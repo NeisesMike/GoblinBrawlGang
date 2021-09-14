@@ -7,6 +7,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using System.Diagnostics;
 
 namespace GoblinBrawlGang
 {
@@ -74,9 +75,10 @@ namespace GoblinBrawlGang
             ControlButtonsGB.Height = 100;
             ControlButtonsGB.Location = new Point(12, CRButtonsGB.Location.Y + CRButtonsGB.Height);
 
-            NewControlButtonPlease("Reset Encounter", ResetEncounter);
             NewControlButtonPlease("Toggle Filters", ToggleFilters);
             NewControlButtonPlease("Fill Encounter", RandomizeEncounter);
+            NewControlButtonPlease("Reset Encounter", ResetEncounter);
+            NewControlButtonPlease("Reset Filters", ResetFilters);
             NewControlButtonPlease("Unfill", ReduceEncounter);
 
             Controls.Add(ControlButtonsGB);
@@ -105,7 +107,7 @@ namespace GoblinBrawlGang
             thisButton.Text = name;
             thisButton.Height = 25;
             thisButton.Width = 100;
-            thisButton.Location = new Point(12 + thisButton.Width * (numControlButtons % 2), 24 + thisButton.Height * (numControlButtons / 2));
+            thisButton.Location = new Point(12 + thisButton.Width * (numControlButtons % 3), 24 + thisButton.Height * (numControlButtons / 3));
             thisButton.Click += handler;
             numControlButtons++;
         }
@@ -534,7 +536,6 @@ namespace GoblinBrawlGang
             List<string> alignmentFilters = new List<string>();
             List<string> environmentFilters = new List<string>();
 
-
             // generate filters
             crFilters.Add(CombatRating.CREnumToString(cr));
 
@@ -562,7 +563,6 @@ namespace GoblinBrawlGang
                         case ("environment"):
                             environmentFilters.Add(cItem);
                             break;
-
                     }
                 }
             }
@@ -601,6 +601,17 @@ namespace GoblinBrawlGang
             foreach (var swap in toBeSwapped)
             {
                 SwapMobForCRMob(swap.Item1, swap.Item2);
+            }
+        }
+        private void ResetFilters(object sender, EventArgs e)
+        {
+            foreach (CheckedListBox clb in FiltersGB.Controls.OfType<CheckedListBox>())
+            {
+                clb.ClearSelected();
+                for (int i = 0; i < clb.Items.Count; i++)
+                {
+                    clb.SetItemChecked(i, false);
+                }
             }
         }
     }

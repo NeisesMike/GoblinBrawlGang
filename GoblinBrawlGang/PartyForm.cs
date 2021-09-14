@@ -195,15 +195,5 @@ namespace GoblinBrawlGang
             EBform.Show();
         }
 
-
-
-        public void temp()
-        {
-            Label namelabel = new Label();
-            namelabel.Location = new Point(13, 13);
-            namelabel.Text = "greeter";
-            namelabel.AutoSize = true;
-            this.Controls.Add(namelabel);
-        }
     }
 }
